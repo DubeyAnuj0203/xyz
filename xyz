@@ -1,0 +1,47 @@
+import os
+import sys
+import time
+import subprocess
+from daemonize import Daemonize
+
+def execute_bash_script():
+    try:
+        # Replace 'your_script.sh' with the actual filename of your bash script
+        script_name = 'your_script.sh'
+
+        # Execute the bash script
+        subprocess.run(['bash', script_name], check=True)
+
+    except FileNotFoundError:
+        print(f"Error: The file '{script_name}' was not found.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error: The process returned a non-zero exit code: {e.returncode}.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+def daemon_main():
+    # Change the working directory to the desired location of the daemon script
+    os.chdir('/path/to/your/daemon/script')
+
+    # The main loop of the daemon (replace the sleep time with your desired interval)
+    while True:
+        execute_bash_script()
+        time.sleep(60)  # Execute the bash script every 60 seconds
+
+if __name__ == "__main__":
+    # Replace 'your_daemon_name' with a descriptive name for your daemon
+    pid_file = '/var/run/your_daemon_name.pid'
+    daemon = Daemonize(app="your_daemon_name", pid=pid_file, action=daemon_main)
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'start':
+        # Start the daemon
+        daemon.start()
+    elif len(sys.argv) > 1 and sys.argv[1] == 'stop':
+        # Stop the daemon
+        daemon.stop()
+    elif len(sys.argv) > 1 and sys.argv[1] == 'restart':
+        # Restart the daemon
+        daemon.restart()
+    else:
+        print("Usage: python daemon_script.py [start|stop|restart]")
+        sys.exit(1)
